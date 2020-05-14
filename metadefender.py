@@ -325,10 +325,11 @@ class Metadefender():
         Else return dictionary with AV name and threat name.
 
         Return looks like:
+        {
         scan_data = {
             "IP_spam_base": "Botnet_ip",
             "Another-base": "Spam_detected"
-        }
+            }
         geo_data = {
             "Country": "...",
             "Region": "...",
@@ -336,6 +337,7 @@ class Metadefender():
             "Coordinates": {
                 "Latitude": 123,
                 "Longitude": 456
+                }
             }
         }
 
@@ -415,8 +417,8 @@ class Metadefender():
         It uses a OPSWAT Metadefender APIv4 for perform scan.
         (link: https://api.metadefender.com/v4/file/, sends GET requests)
 
-        Default succeed scan response code is 200;
-        If code is 429, too many scan attempts made or rate limit received.
+        Default succeed scan HTTP response code is 200;
+        If HTTP code is 429, too many scan attempts made or rate limit received.
         Otherwise, see debug log for data received (debug log may content sensitive data).
         """
 
@@ -484,7 +486,7 @@ class Metadefender():
         Else return False.
 
         It uses a OPSWAT Metadefender APIv4 for perform scan.
-        (link: https://api.metadefender.com/v4/file/, sends GET requests)
+        (link: https://api.metadefender.com/v4/file/, HTTP GET requests)
         """
 
         self.MetaLog.debug('__request_file_scan_report: Requesting scan report for {}'.format(data_id))
@@ -536,7 +538,7 @@ class Metadefender():
         If target is not found, raise FileNotFound.
 
         It uses a OPSWAT Metadefender APIv4 for perform scan.
-        (link: https://api.metadefender.com/v4/hash/, sends GET requests)
+        (link: https://api.metadefender.com/v4/hash/, HTTP GET requests)
         """
 
         self.MetaLog.debug('scan_hash: Starting file scan.')
@@ -731,10 +733,10 @@ class Metadefender():
         For filtering codes, it uses list of Metadefender status codes returned by the REST API.
         All possible codes defined in '_http_status_codes'.
 
-        If code is 2XX (200, 204, ...), return True;
-        If code is 3XX (301, ...), return True;
-        If code is 4XX (400, 401, ...), return False;
-        If code is 5XX (500, 501, ...), raise ConnectionRefusedError.
+        If HTTP code is 2XX (200, 204, ...), return True;
+        If HTTP code is 3XX (301, ...), return True;
+        If HTTP code is 4XX (400, 401, ...), return False;
+        If HTTP code is 5XX (500, 501, ...), raise ConnectionRefusedError.
 
         If code is not defined in '_http_status_codes', then raise ValueError.
 
