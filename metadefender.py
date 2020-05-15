@@ -430,7 +430,6 @@ class Metadefender():
 
         self.MetaLog.debug('scan_domain: Sending request.')
         response = requests.get(url, headers=header)
-        print(response.text)
         self.MetaLog.debug('scan_domain: Response: {}'.format(response))
         self.MetaLog.debug('scan_domain: Received data: {}'.format(response.text))
 
@@ -497,7 +496,6 @@ class Metadefender():
 
         self.MetaLog.debug('scan_url: Sending request.')
         response = requests.get(url, headers=header)
-        print(response.text)
         self.MetaLog.debug('scan_url: Response: {}'.format(response))
         self.MetaLog.debug('scan_url: Received data: {}'.format(response.text))
 
