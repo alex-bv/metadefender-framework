@@ -8,8 +8,8 @@ This framework is used to:
 - [x] Scan files by hash (SHA-256);
 - [x] Scan files by binnaries;
 - [x] Scan IP addresses;
-- [ ] Scan domains;
-- [ ] Scan URLs.
+- [x] Scan domains;
+- [x] Scan URLs.
 
 ## Limitations:
 Framework is not a complete solution ready out-of-the-box. By itself, its supposed to provide simple interface, and not pretend to be something more.
@@ -35,11 +35,18 @@ print(ip_scan)
 
 Available functions:
 1. ```scan_ip```;
-2. ```scan_file```;
-3. ```scan_hash```.
+2. ```scan_domain```;
+3. ```scan_url```;
+4. ```scan_file```;
+5. ```scan_hash```.
 
-### IP scan details:
+### Network scan details
+There are 3 types of network resources scan methods:
+- IP scan;
+- Domain-name scan;
+- URL scan.
 
+#### IP scan details:
 If IP was never scanned or treat not detected, return empty ```dict```.
 Else return dictionary with AV name and threat name.
 
@@ -62,13 +69,50 @@ For example, using ```metadefender_framework.scan_ip('1.2.3.4')``` (considering 
 }
  ```
 It uses a OPSWAT Metadefender APIv4 for perform scan.
-(link: ```https://api.metadefender.com/v4/scan/```, HTTP GET requests).
+(link: ```https://api.metadefender.com/v4/ip/```, HTTP GET requests).
+Default succeed scan HTTP response code is 200;
+If HTTP code is 429, too many scan attempts made or rate limit received.
+
+#### Domain scan details:
+If domain was never scanned or treat not detected, return empty ```dict```.
+Else return dictionary with AV name and threat name.
+
+For example, using ```metadefender_framework.scan_domain('example.com')``` (considering ```example.com``` is malicious) will return ```dict``` type data:
+```
+{
+    scan_data = {
+        "domain_spam_base": "malicious_domain",
+        "Another-base": "Spam_detected"
+    }
+}
+ ```
+It uses a OPSWAT Metadefender APIv4 for perform scan.
+(link: ```https://api.metadefender.com/v4/domain/```, HTTP GET requests).
+Default succeed scan HTTP response code is 200;
+If HTTP code is 429, too many scan attempts made or rate limit received.
+
+#### URL scan details:
+If URL was never scanned or treat not detected, return empty ```dict```.
+Else return dictionary with AV name and threat name.
+To use URL scan, one have to provide *URL-encoded* string (see example).
+
+For example, using ```metadefender_framework.scan_url('https%3A%2F%2Fexample.com%2Fexample.html')``` (considering ```https://example.com/example.html``` is malicious) will return ```dict``` type data:
+```
+{
+    scan_data = {
+        "url_spam_base": "malicious_url",
+        "Another-base": "Spam_detected"
+    }
+ ```
+It uses a OPSWAT Metadefender APIv4 for perform scan.
+(link: ```https://api.metadefender.com/v4/url/```, HTTP GET requests).
 Default succeed scan HTTP response code is 200;
 If HTTP code is 429, too many scan attempts made or rate limit received.
 
 ### File scan details:
 There are 2 methods of file scan: by binnary and by hash.
 Scanning file by hash is prefered, as it quicker.
+
 #### Scan by binnary:
 ```scan_file``` is used to scan file by binnary.
 
