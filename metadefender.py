@@ -1,4 +1,4 @@
-from hashlib import sha256 as get_sha256
+import hashlib
 import json
 import os
 import time
@@ -325,11 +325,10 @@ class Metadefender():
         Else return dictionary with AV name and threat name.
 
         Return looks like:
-        {
         scan_data = {
             "IP_spam_base": "Botnet_ip",
             "Another-base": "Spam_detected"
-            }
+        }
         geo_data = {
             "Country": "...",
             "Region": "...",
@@ -337,12 +336,11 @@ class Metadefender():
             "Coordinates": {
                 "Latitude": 123,
                 "Longitude": 456
-                }
             }
         }
 
         It uses a OPSWAT Metadefender APIv4 for perform scan.
-        (link: https://api.metadefender.com/v4/scan/, sends GET requests)
+        (link: https://api.metadefender.com/v4/ip/, sends GET requests)
 
         Default succeed scan response code is 200;
         If code is 429, too many scan attempts made or rate limit received.
@@ -381,6 +379,8 @@ class Metadefender():
                 source = data["lookup_results"]["sources"][num]["provider"]
                 if data["lookup_results"]["sources"][num]["status"] == 0:
                     scan_result[source] = 'No malicious activity detected.'
+                elif data["lookup_results"]["sources"][num]["status"] == 5:
+                    scan_result[source] = 'Unknown\\No malicious activity detected.'
                 else:
                     self.MetaLog.warning('scan_ip: {} infected. Reported by {}'.format(target, source))
                     scan_result[source] = data["lookup_results"]["sources"][num]["assessment"]
@@ -398,6 +398,138 @@ class Metadefender():
         else:
             self.MetaLog.info('scan_ip: IP scan succeed.')
             return scan_result, geo_data
+
+    def scan_domain(self, target: str) -> dict:
+        """ Method send domain string to Metadefender and receive response in JSON.
+        Method must receive domain-name string to scan ('target').
+
+        If domain was never scanned or treat not detected, return empty dictionary;
+        Else return dictionary with AV name and threat name.
+
+        Return looks like:
+        scan_data = {
+            "IP_spam_base": "Botnet_ip",
+            "Another-base": "Spam_detected"
+        }
+
+        It uses a OPSWAT Metadefender APIv4 for perform scan.
+        (link: https://api.metadefender.com/v4/domain/, sends GET requests)
+
+        Default succeed scan response code is 200;
+        If code is 429, too many scan attempts made or rate limit received.
+        Otherwise, see debug log for data received (debug log may content sensitive data).
+        """
+
+        self.MetaLog.debug('scan_domain: Starting domain scan.')
+        self.MetaLog.debug('scan_domain: current target: {}'.format(target))
+
+        url = "https://api.metadefender.com/v4/domain/{}".format(target)
+        header = {
+            'apikey': self.apikey
+        }
+
+        self.MetaLog.debug('scan_domain: Sending request.')
+        response = requests.get(url, headers=header)
+        print(response.text)
+        self.MetaLog.debug('scan_domain: Response: {}'.format(response))
+        self.MetaLog.debug('scan_domain: Received data: {}'.format(response.text))
+
+        self.MetaLog.debug('scan_domain: checking HTTP {} code...'.format(response.status_code))
+        if self.__http_code_check(response.status_code) is False:
+            self.MetaLog.info('scan_domain: Bad HTTP {} code!'.format(response.status_code))
+            return False
+        else:
+            self.MetaLog.debug('scan_domain: OK HTTP {} code.'.format(response.status_code))
+
+        data = json.loads(response.text)
+        scan_result = {}
+
+        self.MetaLog.debug('scan_domain: Formating dictionaries.')
+        try:
+            for num in range(len(data["lookup_results"]["sources"])):
+                source = data["lookup_results"]["sources"][num]["provider"]
+                if data["lookup_results"]["sources"][num]["status"] == 0:
+                    scan_result[source] = 'No malicious activity detected.'
+                elif data["lookup_results"]["sources"][num]["status"] == 5:
+                    scan_result[source] = 'Unknown\\No malicious activity detected.' # Unknown status
+                else:
+                    self.MetaLog.warning('scan_domain: {} infected. Reported by {}'.format(target, source))
+                    scan_result[source] = data["lookup_results"]["sources"][num]["assessment"]
+
+        except KeyError as kerr:
+            self.MetaLog.error('scan_domain: Bad data received. Probably bad request sent.')
+            self.MetaLog.debug('scan_domain: KeyError arguments: {}'.format(str(kerr.args)))
+            raise
+        else:
+            self.MetaLog.info('scan_domain: IP scan succeed.')
+            return scan_result
+
+    def scan_url(self, target: str) -> dict:
+        """ Method send URL string to Metadefender and receive response in JSON.
+        Method must receive URL string to scan ('target').
+        'target' must be URL-encoded string.
+
+        If URL was never scanned or treat not detected, return empty dictionary;
+        Else return dictionary with AV name and threat name.
+
+        Return looks like:
+        scan_data = {
+            "IP_spam_base": "Botnet_ip",
+            "Another-base": "Spam_detected"
+        }
+
+        It uses a OPSWAT Metadefender APIv4 for perform scan.
+        (link: https://api.metadefender.com/v4/url/, sends GET requests)
+
+        Default succeed scan response code is 200;
+        If code is 429, too many scan attempts made or rate limit received.
+        Otherwise, see debug log for data received (debug log may content sensitive data).
+        """
+
+        self.MetaLog.debug('scan_url: Starting domain scan.')
+        self.MetaLog.debug('scan_url: current target: {}'.format(target))
+
+        url = "https://api.metadefender.com/v4/url/{}".format(target)
+        header = {
+            'apikey': self.apikey,
+            'Content-Type': 'application/json'
+        }
+
+        self.MetaLog.debug('scan_url: Sending request.')
+        response = requests.get(url, headers=header)
+        print(response.text)
+        self.MetaLog.debug('scan_url: Response: {}'.format(response))
+        self.MetaLog.debug('scan_url: Received data: {}'.format(response.text))
+
+        self.MetaLog.debug('scan_url: checking HTTP {} code...'.format(response.status_code))
+        if self.__http_code_check(response.status_code) is False:
+            self.MetaLog.info('scan_url: Bad HTTP {} code!'.format(response.status_code))
+            return False
+        else:
+            self.MetaLog.debug('scan_url: OK HTTP {} code.'.format(response.status_code))
+
+        data = json.loads(response.text)
+        scan_result = {}
+
+        self.MetaLog.debug('scan_url: Formating dictionaries.')
+        try:
+            for num in range(len(data["lookup_results"]["sources"])):
+                source = data["lookup_results"]["sources"][num]["provider"]
+                if data["lookup_results"]["sources"][num]["status"] == 0:
+                    scan_result[source] = 'No malicious activity detected.'
+                elif data["lookup_results"]["sources"][num]["status"] == 5:
+                    scan_result[source] = 'Unknown\\No malicious activity detected.' # Unknown status
+                else:
+                    self.MetaLog.warning('scan_url: {} infected. Reported by {}'.format(target, source))
+                    scan_result[source] = data["lookup_results"]["sources"][num]["assessment"]
+
+        except KeyError as kerr:
+            self.MetaLog.error('scan_url: Bad data received. Probably bad request sent.')
+            self.MetaLog.debug('scan_url: KeyError arguments: {}'.format(str(kerr.args)))
+            raise
+        else:
+            self.MetaLog.info('scan_url: IP scan succeed.')
+            return scan_result
 
 
     def scan_file(self, target: str) -> dict:
@@ -417,8 +549,8 @@ class Metadefender():
         It uses a OPSWAT Metadefender APIv4 for perform scan.
         (link: https://api.metadefender.com/v4/file/, sends GET requests)
 
-        Default succeed scan HTTP response code is 200;
-        If HTTP code is 429, too many scan attempts made or rate limit received.
+        Default succeed scan response code is 200;
+        If code is 429, too many scan attempts made or rate limit received.
         Otherwise, see debug log for data received (debug log may content sensitive data).
         """
 
@@ -486,7 +618,7 @@ class Metadefender():
         Else return False.
 
         It uses a OPSWAT Metadefender APIv4 for perform scan.
-        (link: https://api.metadefender.com/v4/file/, HTTP GET requests)
+        (link: https://api.metadefender.com/v4/file/, sends GET requests)
         """
 
         self.MetaLog.debug('__request_file_scan_report: Requesting scan report for {}'.format(data_id))
@@ -538,7 +670,7 @@ class Metadefender():
         If target is not found, raise FileNotFound.
 
         It uses a OPSWAT Metadefender APIv4 for perform scan.
-        (link: https://api.metadefender.com/v4/hash/, HTTP GET requests)
+        (link: https://api.metadefender.com/v4/hash/, sends GET requests)
         """
 
         self.MetaLog.debug('scan_hash: Starting file scan.')
@@ -598,7 +730,7 @@ class Metadefender():
         self.MetaLog.debug('__get_hash: Calculating hash for {}'.format(str(target)))
         try:
             with open(target, 'rb') as file_:
-                process = get_sha256()
+                process = hashlib.sha256()
                 while True:
                     data = file_.read(8192)
                     if not data:
@@ -733,10 +865,10 @@ class Metadefender():
         For filtering codes, it uses list of Metadefender status codes returned by the REST API.
         All possible codes defined in '_http_status_codes'.
 
-        If HTTP code is 2XX (200, 204, ...), return True;
-        If HTTP code is 3XX (301, ...), return True;
-        If HTTP code is 4XX (400, 401, ...), return False;
-        If HTTP code is 5XX (500, 501, ...), raise ConnectionRefusedError.
+        If code is 2XX (200, 204, ...), return True;
+        If code is 3XX (301, ...), return True;
+        If code is 4XX (400, 401, ...), return False;
+        If code is 5XX (500, 501, ...), raise ConnectionRefusedError.
 
         If code is not defined in '_http_status_codes', then raise ValueError.
 
