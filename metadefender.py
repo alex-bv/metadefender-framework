@@ -722,7 +722,6 @@ class Metadefender():
             return False
         else:
             self.MetaLog.debug('scan_hash: Scan complete.')
-            self.MetaLog.debug('scan_hash: Calling for __request_file_scan_report with argument {}'.format(data["data_id"]))
             return self.__parse_scan_report(data)
 
     def __get_hash(self, target: str) -> str:
