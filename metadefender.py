@@ -640,16 +640,26 @@ class Metadefender():
         self.MetaLog.debug('__request_file_scan_report: loads received JSON data.')
         data = json.loads(response.text)
 
-        try:
-            self.MetaLog.debug('__request_file_scan_report: Check if scan progress done.')
-            if data["scan_results"]["progress_percentage"] != 100:
-                self.MetaLog.debug('__request_file_scan_report: Scan not done yet. Trying again.')
-                time.sleep(timer)
-                self.__request_file_scan_report(data_id)
-        except KeyError as kerr:
-            self.MetaLog.error('__request_file_scan_report: Bad data received. Probably bad request sent.')
-            self.MetaLog.debug('__request_file_scan_report: KeyError arguments: {}'.format(str(kerr.args)))
-            raise
+        def __check_done(response: dict) -> bool:
+            """ Check if scan done. """
+
+            self.MetaLog.debug('__request_file_scan_report.__check_done: Check if scan complete...')
+            try:
+                if response["scan_results"]["progress_percentage"] == 100:
+                    self.MetaLog.debug('__request_file_scan_report.__check_done: Scan complete.')
+                    return True
+                else:
+                    self.MetaLog.debug('__request_file_scan_report.__check_done: Scan is not done yet, {}% currently'.format(response["scan_results"]["progress_percentage"]))
+                    return False
+            except KeyError as kerr:
+                self.MetaLog.error('__request_file_scan_report.__check_done: Bad data received. Probably bad request sent.')
+                self.MetaLog.debug('__request_file_scan_report.__check_done: KeyError arguments: {}'.format(str(kerr.args)))
+                return False
+
+        while __check_done(data) is False:
+            self.MetaLog.debug('__request_file_scan_report: Awaiting results...')
+            time.sleep(timer)
+            return self.__request_file_scan_report(data_id, timer)
         else:
             self.MetaLog.info('__request_file_scan_report: Scan seccessfully done.')
             self.MetaLog.debug('__request_file_scan_report: Calling for __parse_scan_report.')
