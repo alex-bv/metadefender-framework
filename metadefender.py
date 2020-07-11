@@ -408,7 +408,7 @@ class Metadefender():
 
         Return looks like:
         scan_data = {
-            "IP_spam_base": "Botnet_ip",
+            "IP_spam_base": "Malware_domain",
             "Another-base": "Spam_detected"
         }
 
@@ -460,7 +460,7 @@ class Metadefender():
             self.MetaLog.debug('scan_domain: KeyError arguments: {}'.format(str(kerr.args)))
             raise
         else:
-            self.MetaLog.info('scan_domain: IP scan succeed.')
+            self.MetaLog.info('scan_domain: Domain scan succeed.')
             return scan_result
 
     def scan_url(self, target: str) -> dict:
@@ -473,7 +473,7 @@ class Metadefender():
 
         Return looks like:
         scan_data = {
-            "IP_spam_base": "Botnet_ip",
+            "URL_spam_base": "Malware_URL",
             "Another-base": "Spam_detected"
         }
 
@@ -526,7 +526,7 @@ class Metadefender():
             self.MetaLog.debug('scan_url: KeyError arguments: {}'.format(str(kerr.args)))
             raise
         else:
-            self.MetaLog.info('scan_url: IP scan succeed.')
+            self.MetaLog.info('scan_url: URL scan succeed.')
             return scan_result
 
 
