@@ -12,7 +12,7 @@ class Metadefender():
     Receive Metadefender API key.
 
     Available methods:
-        public: scan_ip, scan_file, scan_hash
+        public: scan_ip, scan_domain, scan_url, scan_file, scan_hash
         private: __request_file_scan_report, __check_response_data, __get_hash, __http_code_check, __parse_scan_report
 
     Required packages (dependencies): 
@@ -26,7 +26,7 @@ class Metadefender():
 
     Function relationship:
 
-        scan_ip
+        scan_ip, scan_url, scan_domain
 
         scan_file --> __request_file_scan_report -+
             |                                     |
@@ -362,8 +362,8 @@ class Metadefender():
 
         self.MetaLog.debug('scan_ip: checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.info('scan_ip: Bad HTTP {} code!'.format(response.status_code))
-            return False
+            self.MetaLog.error('scan_ip: Bad HTTP {} code!'.format(response.status_code))
+            raise ConnectionError('scan_ip: Bad HTTP {} code!'.format(response.status_code), target)
         else:
             self.MetaLog.debug('scan_ip: OK HTTP {} code.'.format(response.status_code))
 
@@ -435,8 +435,8 @@ class Metadefender():
 
         self.MetaLog.debug('scan_domain: checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.info('scan_domain: Bad HTTP {} code!'.format(response.status_code))
-            return False
+            self.MetaLog.error('scan_domain: Bad HTTP {} code!'.format(response.status_code))
+            raise ConnectionError('scan_domain: Bad HTTP {} code!'.format(response.status_code), target)
         else:
             self.MetaLog.debug('scan_domain: OK HTTP {} code.'.format(response.status_code))
 
@@ -501,8 +501,8 @@ class Metadefender():
 
         self.MetaLog.debug('scan_url: checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.info('scan_url: Bad HTTP {} code!'.format(response.status_code))
-            return False
+            self.MetaLog.error('scan_url: Bad HTTP {} code!'.format(response.status_code))
+            raise ConnectionError('scan_url: Bad HTTP {} code!'.format(response.status_code), target)
         else:
             self.MetaLog.debug('scan_url: OK HTTP {} code.'.format(response.status_code))
 
@@ -588,8 +588,8 @@ class Metadefender():
 
         self.MetaLog.debug('scan_file: checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.info('scan_file: Bad HTTP {} code!'.format(response.status_code))
-            return False
+            self.MetaLog.error('scan_file: Bad HTTP {} code!'.format(response.status_code))
+            raise ConnectionError('scan_file: Bad HTTP {} code!'.format(response.status_code), target)
         else:
             self.MetaLog.debug('scan_file: OK HTTP {} code.'.format(response.status_code))
 
@@ -707,8 +707,8 @@ class Metadefender():
 
         self.MetaLog.debug('scan_hash: checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.info('scan_hash: Bad HTTP {} code!'.format(response.status_code))
-            return False
+            self.MetaLog.error('scan_hash: Bad HTTP {} code!'.format(response.status_code))
+            raise ConnectionError('scan_hash: Bad HTTP {} code!'.format(response.status_code), target)
         else:
             self.MetaLog.debug('scan_hash: OK HTTP {} code.'.format(response.status_code))
 
