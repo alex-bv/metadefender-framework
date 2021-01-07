@@ -366,8 +366,8 @@ class Metadefender():
 
         self.MetaLog.debug('checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.error('Bad HTTP {} code!'.format(response.status_code))
-            raise ConnectionError('Bad HTTP {} code!'.format(response.status_code), response.status_code, target)
+            self.MetaLog.error('Bad HTTP {} code received!'.format(response.status_code))
+            raise ConnectionError('Bad HTTP {} code received!'.format(response.status_code), response.status_code, target)
         else:
             self.MetaLog.debug('OK HTTP {} code.'.format(response.status_code))
 
@@ -439,8 +439,8 @@ class Metadefender():
 
         self.MetaLog.debug('checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.error('Bad HTTP {} code!'.format(response.status_code))
-            raise ConnectionError('Bad HTTP {} code!'.format(response.status_code), response.status_code, target)
+            self.MetaLog.error('Bad HTTP {} code received!'.format(response.status_code))
+            raise ConnectionError('Bad HTTP {} code received!'.format(response.status_code), response.status_code, target)
         else:
             self.MetaLog.debug('OK HTTP {} code.'.format(response.status_code))
 
@@ -505,8 +505,8 @@ class Metadefender():
 
         self.MetaLog.debug('checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.error('Bad HTTP {} code!'.format(response.status_code))
-            raise ConnectionError('Bad HTTP {} code!'.format(response.status_code), response.status_code, target)
+            self.MetaLog.error('Bad HTTP {} code received!'.format(response.status_code))
+            raise ConnectionError('Bad HTTP {} code received!'.format(response.status_code), response.status_code, target)
         else:
             self.MetaLog.debug('OK HTTP {} code.'.format(response.status_code))
 
@@ -592,8 +592,8 @@ class Metadefender():
 
         self.MetaLog.debug('checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.error('Bad HTTP {} code!'.format(response.status_code))
-            raise ConnectionError('Bad HTTP {} code!'.format(response.status_code), response.status_code, target)
+            self.MetaLog.error('Bad HTTP {} code received!'.format(response.status_code))
+            raise ConnectionError('Bad HTTP {} code received!'.format(response.status_code), response.status_code, target)
         else:
             self.MetaLog.debug('OK HTTP {} code.'.format(response.status_code))
 
@@ -636,7 +636,7 @@ class Metadefender():
 
         self.MetaLog.debug('checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.info('Bad HTTP {} code!'.format(response.status_code))
+            self.MetaLog.info('Bad HTTP {} code received!'.format(response.status_code))
             return False
         else:
             self.MetaLog.debug('OK HTTP {} code.'.format(response.status_code))
@@ -670,9 +670,11 @@ class Metadefender():
             return self.__parse_scan_report(data)
 
 
-    def scan_hash(self, target: str) -> dict:
+    def scan_hash(self, target: str, __send: bool = False) -> dict:
         """ Perform SHA-256 calculation, send file hash to Metadefender
         and receive response in JSON. Method must receive path to file ('target').
+        If '__send' is True, in case of error HTTP code received, 'scan_file' with same target
+        will be called.
 
         Return 2 dictionaries:
             1st. Scan results. Looks like {'Antivirus': 'File_infection_status', ...},
@@ -680,6 +682,7 @@ class Metadefender():
         Return False if check was not successfull.
 
         If target is not found, raise FileNotFound.
+        Raise ConnectionError if error HTTP code received (skiped if '__send' is True).
 
         It uses a OPSWAT Metadefender APIv4 for perform scan.
         (link: https://api.metadefender.com/v4/hash/, sends GET requests)
@@ -711,8 +714,12 @@ class Metadefender():
 
         self.MetaLog.debug('checking HTTP {} code...'.format(response.status_code))
         if self.__http_code_check(response.status_code) is False:
-            self.MetaLog.error('Bad HTTP {} code!'.format(response.status_code))
-            raise ConnectionError('Bad HTTP {} code!'.format(response.status_code), response.status_code, target)
+            self.MetaLog.error('Bad HTTP {} code received!'.format(response.status_code))
+            if __send is True:
+                self.MetaLog.info('Trying to send file\'s binnary...')
+                return self.scan_file(target)
+            else:
+                raise ConnectionError('Bad HTTP {} code received!'.format(response.status_code), response.status_code, target, hashsum)
         else:
             self.MetaLog.debug('OK HTTP {} code.'.format(response.status_code))
 
